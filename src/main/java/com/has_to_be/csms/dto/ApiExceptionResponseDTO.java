@@ -1,9 +1,13 @@
 package com.has_to_be.csms.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 
 @Data
+@RequiredArgsConstructor
+@AllArgsConstructor
 public class ApiExceptionResponseDTO {
 
     public ApiExceptionResponseDTO(String method, int status, String path) {
