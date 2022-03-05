@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 @Configuration
 public class MessageSourceConfiguration {
+
     @Bean
     @Qualifier("validationMessageSource")
     public MessageSource validationMessageSource() {
@@ -19,4 +20,15 @@ public class MessageSourceConfiguration {
         messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
         return messageSource;
     }
+
+    @Bean
+    @Qualifier("businessExceptionMessageSource")
+    public MessageSource businessExceptionMessageSource() {
+        ReloadableResourceBundleMessageSource messageSource =
+                new ReloadableResourceBundleMessageSource();
+        messageSource.setBasename("classpath:messages/exception");
+        messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
+        return messageSource;
+    }
+
 }
