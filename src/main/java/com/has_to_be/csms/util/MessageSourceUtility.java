@@ -8,10 +8,10 @@ import org.springframework.context.NoSuchMessageException;
 import java.util.Locale;
 
 @Log4j2
-public final class MessageResourceUtility {
+public final class MessageSourceUtility {
     public static final String MESSAGE_MISSING_IN_BUNDLE = "message.missing.in.bundle";
 
-    private MessageResourceUtility() {
+    private MessageSourceUtility() {
     }
 
     public static String getMessageByMessageKey(MessageSource messageSource,

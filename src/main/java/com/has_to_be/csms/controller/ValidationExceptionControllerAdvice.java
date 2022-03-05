@@ -1,7 +1,7 @@
 package com.has_to_be.csms.controller;
 
 import com.has_to_be.csms.dto.ApiExceptionResponseDTO;
-import com.has_to_be.csms.util.MessageResourceUtility;
+import com.has_to_be.csms.util.MessageSourceUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
@@ -41,12 +41,12 @@ public class ValidationExceptionControllerAdvice {
         String messageKey;
         List<ObjectError> allErrors = result.getAllErrors();
         if (allErrors.isEmpty()) {
-            messageKey = MessageResourceUtility.MESSAGE_MISSING_IN_BUNDLE;
+            messageKey = MessageSourceUtility.MESSAGE_MISSING_IN_BUNDLE;
         } else {
             ObjectError objectError = allErrors.get(0);
             messageKey = objectError.getDefaultMessage();
         }
-        String message = MessageResourceUtility.getMessageByMessageKey(messageSource, messageKey, null, locale);
+        String message = MessageSourceUtility.getMessageByMessageKey(messageSource, messageKey, null, locale);
         apiExceptionResponseDTO.setMessage(message);
         return new ResponseEntity<>(apiExceptionResponseDTO, httpStatus);
     }
