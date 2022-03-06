@@ -1,0 +1,7 @@
+logging:
+  file:
+    name: "./log/${application.name}-${application.version}.log"
+
+application:
+  name: @project.artifactId@
+  version: @project.version@
