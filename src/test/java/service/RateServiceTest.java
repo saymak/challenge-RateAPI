@@ -21,60 +21,63 @@ import static org.mockito.Mockito.when;
 
 class RateServiceTest {
 
+    private RateService underTest = new RateServiceImpl();
+
     @Test
-    void applyRate_applyRateCommandDTOWithValidCdrDTOAndRateDTO_returnsValidRateQueryDTO() throws Exception {
-        RateService rateService = new RateServiceImpl();
-        BigDecimal energy = BigDecimal.valueOf(0.3);
-        BigDecimal time = BigDecimal.valueOf(2);
-        BigDecimal transaction = BigDecimal.valueOf(1);
-        RateDTO rateDTOStub = new RateDTO(energy, time, transaction);
-        String timestampStartStub = "2021-04-05T10:04:00Z";
-        String timestampStopStub = "2021-04-05T11:27:00Z";
-        Long meterStartStub = 1_204_307L;
-        Long meterStopStub = 1_215_230L;
-        CdrDTO cdrDTOStub = new CdrDTO(meterStartStub, meterStopStub, timestampStartStub, timestampStopStub);
-        ApplyRateCommandDTO applyRateCommandDTO = new ApplyRateCommandDTO(rateDTOStub, cdrDTOStub);
-        RateQueryDTO rateQueryDTO = rateService.applyRate(applyRateCommandDTO);
-        Assertions.assertEquals(rateQueryDTO.getOverall(), BigDecimal.valueOf(7.04));
-        Assertions.assertEquals(rateQueryDTO.getRateComponentDTO().getEnergy(), BigDecimal.valueOf(3.277));
-        Assertions.assertEquals(rateQueryDTO.getRateComponentDTO().getTime(), BigDecimal.valueOf(2.767));
-        Assertions.assertEquals(rateQueryDTO.getRateComponentDTO().getTransaction(), BigDecimal.valueOf(1));
+    void applyRate_applyRateCommandDTOWithValidCdrDTOAndRateDTO_returnsValidRateQueryDTO() {
+        BigDecimal givenEnergy = BigDecimal.valueOf(0.3);
+        BigDecimal givenTime = BigDecimal.valueOf(2);
+        BigDecimal givenTransaction = BigDecimal.valueOf(1);
+        RateDTO givenRateStub = new RateDTO(givenEnergy, givenTime, givenTransaction);
+        String givenStartDateStub = "2021-04-05T10:04:00Z";
+        String givenStopDateStub = "2021-04-05T11:27:00Z";
+        Long givenMeterStartStub = 1_204_307L;
+        Long givenMeterStopStub = 1_215_230L;
+        CdrDTO givenCDRStub = new CdrDTO(givenMeterStartStub, givenMeterStopStub, givenStartDateStub, givenStopDateStub);
+        ApplyRateCommandDTO givenRateCommand = new ApplyRateCommandDTO(givenRateStub, givenCDRStub);
+
+        RateQueryDTO result = underTest.applyRate(givenRateCommand);
+
+        Assertions.assertEquals(result.getOverall(), BigDecimal.valueOf(7.04));
+        Assertions.assertEquals(result.getRateComponentDTO().getEnergy(), BigDecimal.valueOf(3.277));
+        Assertions.assertEquals(result.getRateComponentDTO().getTime(), BigDecimal.valueOf(2.767));
+        Assertions.assertEquals(result.getRateComponentDTO().getTransaction(), BigDecimal.valueOf(1));
     }
 
     @Test
-    void applyRate_applyRateCommandDTOInvalidTimestampStart_throwsStartOrEndTimestampMismatchException() throws Exception {
-        RateService rateService = new RateServiceImpl();
-        BigDecimal energy = BigDecimal.valueOf(0.3);
-        BigDecimal time = BigDecimal.valueOf(2);
-        BigDecimal transaction = BigDecimal.valueOf(1);
-        RateDTO rateDTOStub = new RateDTO(energy, time, transaction);
-        String timestampStartStub = "2021-04-05T11:27:00Z";
-        String timestampStopStub = "2021-04-05T10:04:00Z";
-        Long meterStartStub = 1_204_307L;
-        Long meterStopStub = 1_215_230L;
-        CdrDTO cdrDTOStub = new CdrDTO(meterStartStub, meterStopStub, timestampStartStub, timestampStopStub);
-        ApplyRateCommandDTO applyRateCommandDTO = new ApplyRateCommandDTO(rateDTOStub, cdrDTOStub);
-        assertThrows(MismatchedStartAndEndTimesException.class, () -> rateService.applyRate(applyRateCommandDTO));
+    void applyRate_applyRateCommandDTOInvalidTimestampStart_throwsStartOrEndTimestampMismatchException() {
+        BigDecimal givenEnergy = BigDecimal.valueOf(0.3);
+        BigDecimal givenTime = BigDecimal.valueOf(2);
+        BigDecimal givenTransaction = BigDecimal.valueOf(1);
+        RateDTO givenRateStub = new RateDTO(givenEnergy, givenTime, givenTransaction);
+        String givenStartDateStub = "2021-04-05T11:27:00Z";
+        String givenStopDateStub = "2021-04-05T10:04:00Z";
+        Long givenMeterStartStub = 1_204_307L;
+        Long givenMeterStopStub = 1_215_230L;
+        CdrDTO givenCDRStub = new CdrDTO(givenMeterStartStub, givenMeterStopStub, givenStartDateStub, givenStopDateStub);
+
+        ApplyRateCommandDTO givenRateCommand = new ApplyRateCommandDTO(givenRateStub, givenCDRStub);
+
+        assertThrows(MismatchedStartAndEndTimesException.class, () -> underTest.applyRate(givenRateCommand));
     }
 
     @Test
-    void applyRate_nullApplyRateCommandDTO_throwsInvalidApplyRateCommandException() throws Exception {
-        RateService rateService = new RateServiceImpl();
-        assertThrows(InvalidApplyRateCommandException.class, () -> rateService.applyRate(null));
+    void applyRate_nullApplyRateCommandDTO_throwsInvalidApplyRateCommandException() {
+        assertThrows(InvalidApplyRateCommandException.class, () -> underTest.applyRate(null));
     }
 
     @Test
-    void applyRate_invalidStartStopMeter_throwsMismatchedStartAndEndMeterException() throws Exception {
-        // meterStopStub is less than meterStartStub
-        Long meterStartStub = 1_215_230L;
-        Long meterStopStub = 1_204_307L;
-        CdrDTO mockedCdrDTO = Mockito.mock(CdrDTO.class);
-        RateDTO mockedRateDTO = Mockito.mock(RateDTO.class);
-        when(mockedCdrDTO.getMeterStart()).thenReturn(meterStartStub);
-        when(mockedCdrDTO.getMeterStop()).thenReturn(meterStopStub);
-        ApplyRateCommandDTO mockedApplyRateCommandDTO = new ApplyRateCommandDTO(mockedRateDTO, mockedCdrDTO);
-        RateService rateService = new RateServiceImpl();
-        assertThrows(MismatchedStartAndEndMeterException.class, () -> rateService.applyRate(mockedApplyRateCommandDTO));
+    void applyRate_invalidStartStopMeter_throwsMismatchedStartAndEndMeterException() {
+        Long givenMeterStartStub = 1_215_230L;
+        Long givenMeterStopStub = 1_204_307L;
+        RateDTO givenRate = Mockito.mock(RateDTO.class);
+        CdrDTO givenCDR = Mockito.mock(CdrDTO.class);
+
+        when(givenCDR.getMeterStart()).thenReturn(givenMeterStartStub);
+        when(givenCDR.getMeterStop()).thenReturn(givenMeterStopStub);
+        ApplyRateCommandDTO mockedApplyRateCommand = new ApplyRateCommandDTO(givenRate, givenCDR);
+
+        assertThrows(MismatchedStartAndEndMeterException.class, () -> underTest.applyRate(mockedApplyRateCommand));
     }
 
 }

@@ -8,72 +8,73 @@ import org.springframework.context.NoSuchMessageException;
 
 import java.util.Locale;
 
+import static com.has_to_be.csms.util.MessageSourceUtility.getMessage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 class MessageSourceUtilityTest {
 
+    private MessageSource underTest = Mockito.mock(MessageSource.class);
+
     @Test
-    void getExceptionMessage_messageBySpecifiedKey_foundCorrespondingValue() throws Exception {
-        MessageSource messageSource = Mockito.mock(MessageSource.class);
-        String messageStub = "message found by key";
-        when(messageSource.getMessage(Mockito.anyString(), Mockito.any(), Mockito.any(Locale.class)))
-                .thenReturn(messageStub);
-        String message = MessageSourceUtility
-                .getMessageByMessageKey(messageSource, "messageKeyStub", Mockito.mock(Locale.class));
-        assertNotNull(message);
-        assertEquals(message, messageStub);
-        Mockito.verify(messageSource).getMessage(Mockito.anyString(), Mockito.any(), Mockito.any());
+    void getMessage_messageBySpecifiedKey_foundCorrespondingValue() {
+        String givenMessageStub = "message found by key";
+        when(underTest.getMessage(Mockito.anyString(), Mockito.any(), Mockito.any(Locale.class)))
+                .thenReturn(givenMessageStub);
+
+        String result = getMessage(underTest, "messageKeyStub", Mockito.mock(Locale.class));
+
+        assertNotNull(result);
+        assertEquals(result, givenMessageStub);
+        Mockito.verify(underTest).getMessage(Mockito.anyString(), Mockito.any(), Mockito.any());
     }
 
     @Test
-    void getExceptionMessage_messageBySpecifiedKey_returnDefaultNotFoundMessage() throws Exception {
-        MessageSource messageSource = Mockito.mock(MessageSource.class);
+    void getMessage_messageBySpecifiedKey_returnDefaultNotFoundMessage() {
         String missingMessageStub = "message not found by key";
-        when(messageSource.getMessage(Mockito.anyString(), Mockito.any(), Mockito.any(Locale.class)))
+        when(underTest.getMessage(Mockito.anyString(), Mockito.any(), Mockito.any(Locale.class)))
                 .thenThrow(NoSuchMessageException.class);
-        when(messageSource.getMessage(Mockito.eq(MessageSourceUtility.MESSAGE_MISSING_IN_BUNDLE),
+        when(underTest.getMessage(Mockito.eq(MessageSourceUtility.MESSAGE_MISSING_IN_BUNDLE),
                 Mockito.any(), Mockito.any(Locale.class)))
                 .thenReturn(missingMessageStub);
-        String message = MessageSourceUtility
-                .getMessageByMessageKey(messageSource, "messageKeyStub",
-                        Mockito.mock(Locale.class));
-        assertNotNull(message);
-        assertEquals(message, missingMessageStub);
-        Mockito.verify(messageSource, Mockito.times(2))
+
+        String result = getMessage(underTest, "messageKeyStub",
+                Mockito.mock(Locale.class));
+
+        assertNotNull(result);
+        assertEquals(result, missingMessageStub);
+        Mockito.verify(underTest, Mockito.times(2))
                 .getMessage(Mockito.anyString(), Mockito.any(), Mockito.any());
     }
 
     @Test
-    void getExceptionMessage_messageBySpecifiedKeyAndArgument_returnDefaultNotFoundMessage() throws Exception {
-        MessageSource messageSource = Mockito.mock(MessageSource.class);
-        String messageStub = "message found by key";
-        when(messageSource.getMessage(Mockito.anyString(), Mockito.any(), Mockito.any(Locale.class)))
-                .thenReturn(messageStub);
-        String message = MessageSourceUtility.
-                getMessageByMessageKey(messageSource, "messageKeyStub", new Object[]{},
-                        Mockito.mock(Locale.class));
-        assertNotNull(message);
-        assertEquals(message, messageStub);
-        Mockito.verify(messageSource).getMessage(Mockito.anyString(), Mockito.any(), Mockito.any());
+    void getMessage_messageBySpecifiedKeyAndArgument_returnDefaultNotFoundMessage() {
+        String givenMessageStub = "message found by key";
+        when(underTest.getMessage(Mockito.anyString(), Mockito.any(), Mockito.any(Locale.class)))
+                .thenReturn(givenMessageStub);
+
+        String result = getMessage(underTest, "messageKeyStub", Mockito.mock(Locale.class), new Object[]{});
+
+        assertNotNull(result);
+        assertEquals(result, givenMessageStub);
+        Mockito.verify(underTest).getMessage(Mockito.anyString(), Mockito.any(), Mockito.any());
     }
 
     @Test
-    void getExceptionMessage_messageBySpecifiedKeyAndArgument_foundCorrespondingValue() throws Exception {
-        MessageSource messageSource = Mockito.mock(MessageSource.class);
+    void getMessage_messageBySpecifiedKeyAndArgument_foundCorrespondingValue() {
         String missingMessageStub = "message not found by key";
-        when(messageSource.getMessage(Mockito.anyString(), Mockito.any(), Mockito.any(Locale.class))).
+        when(underTest.getMessage(Mockito.anyString(), Mockito.any(), Mockito.any(Locale.class))).
                 thenThrow(NoSuchMessageException.class);
-        when(messageSource.getMessage(Mockito.eq(MessageSourceUtility.MESSAGE_MISSING_IN_BUNDLE),
+        when(underTest.getMessage(Mockito.eq(MessageSourceUtility.MESSAGE_MISSING_IN_BUNDLE),
                 Mockito.any(), Mockito.any(Locale.class))).
                 thenReturn(missingMessageStub);
-        String message = MessageSourceUtility.
-                getMessageByMessageKey(messageSource, "messageKeyStub", new Object[]{},
-                        Mockito.mock(Locale.class));
-        assertNotNull(message);
-        assertEquals(message, missingMessageStub);
-        Mockito.verify(messageSource, Mockito.times(2)).
+
+        String result = getMessage(underTest, "messageKeyStub", Mockito.mock(Locale.class), new Object[]{});
+
+        assertNotNull(result);
+        assertEquals(result, missingMessageStub);
+        Mockito.verify(underTest, Mockito.times(2)).
                 getMessage(Mockito.anyString(), Mockito.any(), Mockito.any());
     }
 
