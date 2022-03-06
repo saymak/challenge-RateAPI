@@ -10,10 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Locale;
+import java.util.UUID;
 
-import static com.has_to_be.csms.exception.BusinessException.DEFAULT_BAD_REQUEST_MESSAGE_KEY;
 import static com.has_to_be.csms.exception.BusinessException.DEFAULT_INTERNAL_SERVER_ERROR_KEY;
 import static com.has_to_be.csms.util.MessageSourceUtility.getMessage;
 
@@ -40,32 +41,27 @@ public class ExceptionControllerAdvice {
         return new ResponseEntity<>(apiExceptionResponse, e.getStatusCode());
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Object> handleRuntimeException(RuntimeException e,
-                                                         Locale locale,
-                                                         HttpServletRequest request) {
-        log.error("RuntimeException", e);
-        HttpStatus httpStatus;
-        httpStatus = HttpStatus.BAD_REQUEST;
-        ApiExceptionResponseDTO apiExceptionResponseDTO = new ApiExceptionResponseDTO(request.getMethod(),
-                httpStatus.value(),
-                getMessage(messageSource, DEFAULT_BAD_REQUEST_MESSAGE_KEY, locale),
-                request.getRequestURI());
-        return new ResponseEntity<>(apiExceptionResponseDTO, httpStatus);
-    }
-
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleException(Exception e,
-                                                  Locale locale,
-                                                  HttpServletRequest request) {
-        log.error("Exception", e);
+    public ResponseEntity<Object> unhandledException(Exception e,
+                                                     Locale locale,
+                                                     HttpServletRequest request) {
         HttpStatus httpStatus;
-        httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-        ApiExceptionResponseDTO apiExceptionResponseDTO = new ApiExceptionResponseDTO(request.getMethod(),
+        String message;
+        if (e instanceof ServletException) {
+            message = e.getMessage();
+            httpStatus = HttpStatus.BAD_REQUEST;
+            log.error("Exception", e);
+        } else {
+            UUID incidentUUID = UUID.randomUUID();
+            log.error(String.format("unknown exception %s", incidentUUID), e);
+            message = getMessage(messageSource, DEFAULT_INTERNAL_SERVER_ERROR_KEY, locale, incidentUUID);
+            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        ApiExceptionResponseDTO apiExceptionResponse = new ApiExceptionResponseDTO(request.getMethod(),
                 httpStatus.value(),
-                getMessage(messageSource, DEFAULT_INTERNAL_SERVER_ERROR_KEY, locale),
+                message,
                 request.getRequestURI());
-        return new ResponseEntity<>(apiExceptionResponseDTO, httpStatus);
+        return new ResponseEntity<>(apiExceptionResponse, httpStatus);
     }
 
 }
