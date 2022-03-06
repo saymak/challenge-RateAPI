@@ -45,7 +45,7 @@ class RateRestControllerTest {
     private RateService rateService;
 
     @Test
-    void applyRate_jsonObjectMissingCdrAsRequestBody_badRequestCdrObjectIsMissing() throws Exception {
+    void applyRate_jsonObjectMissingCdrAsRequestBody_returnsBadRequestCdrObjectIsMissing() throws Exception {
         RateDTO givenRate = new RateDTO(BigDecimal.valueOf(0.1), BigDecimal.valueOf(1), BigDecimal.valueOf(1));
         ApplyRateCommandDTO givenRateCommand = new ApplyRateCommandDTO(givenRate, null);
         mockMvc.perform(post(ENDPOINT)
@@ -54,13 +54,13 @@ class RateRestControllerTest {
                 .andExpect(jsonPath("$").isNotEmpty())
                 .andExpect(jsonPath("$.message", equalTo("cdr is missing")))
                 .andExpect(jsonPath("$.path", equalTo(ENDPOINT)))
-                .andExpect(jsonPath("$.status").isNotEmpty())
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.method", equalTo(HttpMethod.POST.name())))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void applyRate_jsonObjectMissingRateAsRequestBody_badRequestRateObjectIsMissing() throws Exception {
+    void applyRate_jsonObjectMissingRateAsRequestBody_returnsBadRequestRateObjectIsMissing() throws Exception {
         CdrDTO givenCDR = new CdrDTO(1L, 1L, validTimestampStartStub, validTimestampEndStub);
         ApplyRateCommandDTO givenRateCommand = new ApplyRateCommandDTO(null, givenCDR);
         mockMvc.perform(post(ENDPOINT)
@@ -69,13 +69,13 @@ class RateRestControllerTest {
                 .andExpect(jsonPath("$").isNotEmpty())
                 .andExpect(jsonPath("$.message", equalTo("rate is missing")))
                 .andExpect(jsonPath("$.path", equalTo(ENDPOINT)))
-                .andExpect(jsonPath("$.status").isNotEmpty())
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.method", equalTo(HttpMethod.POST.name())))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void applyRate_energyOfRateObjectIsMissing_badRequestEnergyOfRateObjectIsMissing() throws Exception {
+    void applyRate_energyOfRateObjectIsMissing_returnsBadRequestEnergyOfRateObjectIsMissing() throws Exception {
         RateDTO givenRate = new RateDTO(null, BigDecimal.valueOf(1), BigDecimal.valueOf(1));
         CdrDTO givenCDR = new CdrDTO(1L, 1L, validTimestampStartStub, validTimestampEndStub);
         ApplyRateCommandDTO givenRateCommand = new ApplyRateCommandDTO(givenRate, givenCDR);
@@ -86,14 +86,14 @@ class RateRestControllerTest {
                 .andExpect(jsonPath("$").isNotEmpty())
                 .andExpect(jsonPath("$.message", equalTo("energy of rate is missing")))
                 .andExpect(jsonPath("$.path", equalTo(ENDPOINT)))
-                .andExpect(jsonPath("$.status").isNotEmpty())
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.method", equalTo(HttpMethod.POST.name())))
                 .andExpect(status().isBadRequest());
         Mockito.verifyNoInteractions(rateService);
     }
 
     @Test
-    void applyRate_jsonMissingTimeOfRateObject_badRequestTimeOfRateIsMissing() throws Exception {
+    void applyRate_jsonMissingTimeOfRateObject_returnsBadRequestTimeOfRateIsMissing() throws Exception {
         RateDTO givenRate = new RateDTO(BigDecimal.valueOf(1), null, BigDecimal.valueOf(1));
         CdrDTO givenCDR = new CdrDTO(1L, 1L, validTimestampStartStub, validTimestampEndStub);
         ApplyRateCommandDTO givenRateCommand = new ApplyRateCommandDTO(givenRate, givenCDR);
@@ -103,15 +103,14 @@ class RateRestControllerTest {
                 .andExpect(jsonPath("$").isNotEmpty())
                 .andExpect(jsonPath("$.message", equalTo("time of rate is missing")))
                 .andExpect(jsonPath("$.path", equalTo(ENDPOINT)))
-                .andExpect(jsonPath("$.status").isNotEmpty())
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.method", equalTo(HttpMethod.POST.name())))
                 .andExpect(status().isBadRequest());
         Mockito.verifyNoInteractions(rateService);
     }
 
     @Test
-    void applyRate_jsonMissingTransactionOfRateObject_badRequestTransactionOfRateIsMissing()
-            throws Exception {
+    void applyRate_jsonMissingTransactionOfRateObject_returnsBadRequestTransactionOfRateIsMissing() throws Exception {
         RateDTO givenRate = new RateDTO(BigDecimal.valueOf(1), BigDecimal.valueOf(1), null);
         CdrDTO givenCDR = new CdrDTO(1L, 1L, validTimestampStartStub, validTimestampEndStub);
         ApplyRateCommandDTO givenRateCommand = new ApplyRateCommandDTO(givenRate, givenCDR);
@@ -122,7 +121,7 @@ class RateRestControllerTest {
                 .andExpect(jsonPath("$").isNotEmpty())
                 .andExpect(jsonPath("$.message", equalTo("transaction of rate is missing")))
                 .andExpect(jsonPath("$.path", equalTo(ENDPOINT)))
-                .andExpect(jsonPath("$.status").isNotEmpty())
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.method", equalTo(HttpMethod.POST.name())))
                 .andExpect(status().isBadRequest());
         Mockito.verifyNoInteractions(rateService);
@@ -130,8 +129,7 @@ class RateRestControllerTest {
 
 
     @Test
-    void applyRate_jsonMissingMeterStartOfCdrObject_badRequestMeterStartOfCDRIsMissing()
-            throws Exception {
+    void applyRate_jsonMissingMeterStartOfCdrObject_returnsBadRequestMeterStartOfCDRIsMissing() throws Exception {
         RateDTO givenRate = new RateDTO(BigDecimal.valueOf(1), BigDecimal.valueOf(1), BigDecimal.valueOf(1));
         CdrDTO givenCDR = new CdrDTO(null, 1L, validTimestampStartStub, validTimestampEndStub);
         ApplyRateCommandDTO givenRateCommand = new ApplyRateCommandDTO(givenRate, givenCDR);
@@ -142,14 +140,14 @@ class RateRestControllerTest {
                 .andExpect(jsonPath("$").isNotEmpty())
                 .andExpect(jsonPath("$.message", equalTo("meter start of cdr is missing")))
                 .andExpect(jsonPath("$.path", equalTo(ENDPOINT)))
-                .andExpect(jsonPath("$.status").isNotEmpty())
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.method", equalTo(HttpMethod.POST.name())))
                 .andExpect(status().isBadRequest());
         Mockito.verifyNoInteractions(rateService);
     }
 
     @Test
-    void applyRate_jsonMissingTimestampStartOfCdrObject_badRequestTimestampStartOfCDRIsMissing()
+    void applyRate_jsonMissingTimestampStartOfCdrObject_returnsBadRequestTimestampStartOfCDRIsMissing()
             throws Exception {
         RateDTO givenRate = new RateDTO(BigDecimal.valueOf(1), BigDecimal.valueOf(1), BigDecimal.valueOf(1));
         CdrDTO givenCDR = new CdrDTO(1L, 1L, null, validTimestampEndStub);
@@ -162,15 +160,14 @@ class RateRestControllerTest {
                 .andExpect(jsonPath("$.message",
                         equalTo("start time of cdr is missing")))
                 .andExpect(jsonPath("$.path", equalTo(ENDPOINT)))
-                .andExpect(jsonPath("$.status").isNotEmpty())
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.method", equalTo(HttpMethod.POST.name())))
                 .andExpect(status().isBadRequest());
         Mockito.verifyNoInteractions(rateService);
     }
 
     @Test
-    void applyRate_jsonMissingTimestampStopOfCdrObject_badRequestTimestampStopOfCDRIsMissing()
-            throws Exception {
+    void applyRate_jsonMissingTimestampStopOfCdrObject_returnsBadRequestTimestampStopOfCDRIsMissing() throws Exception {
         RateDTO givenRate = new RateDTO(BigDecimal.valueOf(1), BigDecimal.valueOf(1), BigDecimal.valueOf(1));
         CdrDTO givenCDR = new CdrDTO(1L, 1L, validTimestampStartStub, null);
         ApplyRateCommandDTO givenRateCommand = new ApplyRateCommandDTO(givenRate, givenCDR);
@@ -182,15 +179,14 @@ class RateRestControllerTest {
                 .andExpect(jsonPath("$.message",
                         equalTo("stop time of cdr is missing")))
                 .andExpect(jsonPath("$.path", equalTo(ENDPOINT)))
-                .andExpect(jsonPath("$.status").isNotEmpty())
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.method", equalTo(HttpMethod.POST.name())))
                 .andExpect(status().isBadRequest());
         Mockito.verifyNoInteractions(rateService);
     }
 
     @Test
-    void applyRate_jsonMissingMeterStopOfCdrObject_badRequestMeterStopOfCDRIsMissing()
-            throws Exception {
+    void applyRate_jsonMissingMeterStopOfCdrObject_returnsBadRequestMeterStopOfCDRIsMissing() throws Exception {
         RateDTO givenRate = new RateDTO(BigDecimal.valueOf(1), BigDecimal.valueOf(1), BigDecimal.valueOf(1));
         CdrDTO givenCDR =
                 new CdrDTO(1L, null, validTimestampStartStub, validTimestampEndStub);
@@ -203,7 +199,7 @@ class RateRestControllerTest {
                 .andExpect(jsonPath("$.message",
                         equalTo("meter stop of cdr is missing")))
                 .andExpect(jsonPath("$.path", equalTo(ENDPOINT)))
-                .andExpect(jsonPath("$.status").isNotEmpty())
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.method", equalTo(HttpMethod.POST.name())))
                 .andExpect(status().isBadRequest());
         Mockito.verifyNoInteractions(rateService);
