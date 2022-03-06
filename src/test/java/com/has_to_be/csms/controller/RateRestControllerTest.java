@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.has_to_be.csms.configuration.MessageSourceConfiguration;
 import com.has_to_be.csms.dto.*;
+import com.has_to_be.csms.exception.MismatchedStartAndEndTimesException;
 import com.has_to_be.csms.service.RateService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -232,6 +233,62 @@ class RateRestControllerTest {
                 .andExpect(status().isOk());
         Mockito.verify(rateService, Mockito.times(1))
                 .applyRate(Mockito.any(ApplyRateCommandDTO.class));
+    }
+
+    @Test
+    void applyRate_jsonObjectWithInvalidStartStopTimeOfCdr_returnsBadRequestMismatchedStartAndEndTimes() throws Exception {
+        Long meterStartStub = 1_204_307L;
+        Long meterStopStub = 1_215_230L;
+        RateDTO givenRate = new RateDTO(BigDecimal.valueOf(0.30), BigDecimal.valueOf(2), BigDecimal.valueOf(1));
+        CdrDTO givenCDR =
+                new CdrDTO(meterStartStub, meterStopStub, validTimestampEndStub, validTimestampStartStub);
+        ApplyRateCommandDTO givenApplyRateCommand = new ApplyRateCommandDTO(givenRate, givenCDR);
+
+        when(rateService.applyRate(Mockito.any(ApplyRateCommandDTO.class))).
+                thenThrow(MismatchedStartAndEndTimesException.class);
+
+        mockMvc.perform(post(ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(asJsonString(givenApplyRateCommand).getBytes(StandardCharsets.UTF_8))).andDo(print())
+                .andExpect(jsonPath("$").isNotEmpty())
+                .andExpect(jsonPath("$.message",
+                        equalTo("mismatched start and end times")))
+                .andExpect(jsonPath("$.path", equalTo(ENDPOINT)))
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.method", equalTo(HttpMethod.POST.name())))
+                .andExpect(status().isBadRequest());
+        Mockito.verify(rateService).applyRate(givenApplyRateCommand);
+    }
+
+
+    @Test
+    void applyRate_requestHeaderMediaTypeIsInvalid_returnBadRequest() throws Exception {
+        String givenInvalidHTTPContentType = "Invalid content type";
+        mockMvc.perform(post(ENDPOINT)
+                        .contentType(givenInvalidHTTPContentType)
+                        .content("".getBytes(StandardCharsets.UTF_8))).andDo(print())
+                .andExpect(jsonPath("$").isNotEmpty())
+                .andExpect(jsonPath("$.message").isNotEmpty())
+                .andExpect(jsonPath("$.path", equalTo(ENDPOINT)))
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.method", equalTo(HttpMethod.POST.name())))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void applyRate_unhandledExceptionThrown_returnsInternalServerError() throws Exception {
+        when(rateService.applyRate(Mockito.any(ApplyRateCommandDTO.class))).
+                thenThrow(RuntimeException.class);
+
+        mockMvc.perform(post(ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content("".getBytes(StandardCharsets.UTF_8))).andDo(print())
+                .andExpect(jsonPath("$").isNotEmpty())
+                .andExpect(jsonPath("$.message").isNotEmpty())
+                .andExpect(jsonPath("$.path", equalTo(ENDPOINT)))
+                .andExpect(jsonPath("$.status").value(HttpStatus.INTERNAL_SERVER_ERROR.value()))
+                .andExpect(jsonPath("$.method", equalTo(HttpMethod.POST.name())))
+                .andExpect(status().isInternalServerError());
     }
 
     private String asJsonString(final Object obj) throws JsonProcessingException {
