@@ -14,8 +14,8 @@ public class LocaleConfiguration {
     @Bean
     public LocaleResolver localeResolver() {
         AcceptHeaderLocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
-        final Locale german = new Locale("de");
-        localeResolver.setSupportedLocales(Arrays.asList(Locale.US, german));
+        final Locale germanLocale = new Locale("de");
+        localeResolver.setSupportedLocales(Arrays.asList(Locale.US, germanLocale));
         localeResolver.setDefaultLocale(Locale.US);
         return localeResolver;
     }
