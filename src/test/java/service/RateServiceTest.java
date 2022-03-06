@@ -36,12 +36,12 @@ class RateServiceTest {
         CdrDTO givenCDRStub = new CdrDTO(givenMeterStartStub, givenMeterStopStub, givenStartDateStub, givenStopDateStub);
         ApplyRateCommandDTO givenRateCommand = new ApplyRateCommandDTO(givenRateStub, givenCDRStub);
 
-        RateQueryDTO rateQueryDTO = underTest.applyRate(givenRateCommand);
+        RateQueryDTO result = underTest.applyRate(givenRateCommand);
 
-        Assertions.assertEquals(rateQueryDTO.getOverall(), BigDecimal.valueOf(7.04));
-        Assertions.assertEquals(rateQueryDTO.getRateComponentDTO().getEnergy(), BigDecimal.valueOf(3.277));
-        Assertions.assertEquals(rateQueryDTO.getRateComponentDTO().getTime(), BigDecimal.valueOf(2.767));
-        Assertions.assertEquals(rateQueryDTO.getRateComponentDTO().getTransaction(), BigDecimal.valueOf(1));
+        Assertions.assertEquals(result.getOverall(), BigDecimal.valueOf(7.04));
+        Assertions.assertEquals(result.getRateComponentDTO().getEnergy(), BigDecimal.valueOf(3.277));
+        Assertions.assertEquals(result.getRateComponentDTO().getTime(), BigDecimal.valueOf(2.767));
+        Assertions.assertEquals(result.getRateComponentDTO().getTransaction(), BigDecimal.valueOf(1));
     }
 
     @Test
@@ -55,6 +55,7 @@ class RateServiceTest {
         Long givenMeterStartStub = 1_204_307L;
         Long givenMeterStopStub = 1_215_230L;
         CdrDTO givenCDRStub = new CdrDTO(givenMeterStartStub, givenMeterStopStub, givenStartDateStub, givenStopDateStub);
+
         ApplyRateCommandDTO givenRateCommand = new ApplyRateCommandDTO(givenRateStub, givenCDRStub);
 
         assertThrows(MismatchedStartAndEndTimesException.class, () -> underTest.applyRate(givenRateCommand));
@@ -71,11 +72,12 @@ class RateServiceTest {
         Long givenMeterStopStub = 1_204_307L;
         RateDTO givenRate = Mockito.mock(RateDTO.class);
         CdrDTO givenCDR = Mockito.mock(CdrDTO.class);
+
         when(givenCDR.getMeterStart()).thenReturn(givenMeterStartStub);
         when(givenCDR.getMeterStop()).thenReturn(givenMeterStopStub);
-        ApplyRateCommandDTO mockedApplyRateCommandDTO = new ApplyRateCommandDTO(givenRate, givenCDR);
+        ApplyRateCommandDTO mockedApplyRateCommand = new ApplyRateCommandDTO(givenRate, givenCDR);
 
-        assertThrows(MismatchedStartAndEndMeterException.class, () -> underTest.applyRate(mockedApplyRateCommandDTO));
+        assertThrows(MismatchedStartAndEndMeterException.class, () -> underTest.applyRate(mockedApplyRateCommand));
     }
 
 }
